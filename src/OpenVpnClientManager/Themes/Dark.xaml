@@ -1,0 +1,47 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- SYSO dark palette: near-black ground, white type, muted grey body text, orange accent -->
+    <Color x:Key="C.Bg">#0D0F12</Color>
+    <Color x:Key="C.Surface">#14171C</Color>
+    <Color x:Key="C.SurfaceHover">#1B1F26</Color>
+    <Color x:Key="C.SurfaceActive">#222731</Color>
+    <Color x:Key="C.Border">#262B33</Color>
+    <Color x:Key="C.BorderStrong">#343A45</Color>
+    <Color x:Key="C.Text">#F5F6F7</Color>
+    <Color x:Key="C.TextMuted">#A3A9B3</Color>
+    <Color x:Key="C.TextDim">#6B727D</Color>
+    <Color x:Key="C.Accent">#F26A1B</Color>
+    <Color x:Key="C.AccentHover">#FF7B2E</Color>
+    <Color x:Key="C.AccentPressed">#D95B12</Color>
+    <Color x:Key="C.AccentSoft">#2A1A10</Color>
+    <Color x:Key="C.OnAccent">#FFFFFF</Color>
+    <Color x:Key="C.Success">#3DD68C</Color>
+    <Color x:Key="C.Warning">#F2B01B</Color>
+    <Color x:Key="C.Danger">#F25C4D</Color>
+    <Color x:Key="C.DangerSoft">#2C1614</Color>
+    <Color x:Key="C.Input">#101317</Color>
+    <Color x:Key="C.Selection">#3A2414</Color>
+
+    <SolidColorBrush x:Key="Brush.Bg" Color="{StaticResource C.Bg}" />
+    <SolidColorBrush x:Key="Brush.Surface" Color="{StaticResource C.Surface}" />
+    <SolidColorBrush x:Key="Brush.SurfaceHover" Color="{StaticResource C.SurfaceHover}" />
+    <SolidColorBrush x:Key="Brush.SurfaceActive" Color="{StaticResource C.SurfaceActive}" />
+    <SolidColorBrush x:Key="Brush.Border" Color="{StaticResource C.Border}" />
+    <SolidColorBrush x:Key="Brush.BorderStrong" Color="{StaticResource C.BorderStrong}" />
+    <SolidColorBrush x:Key="Brush.Text" Color="{StaticResource C.Text}" />
+    <SolidColorBrush x:Key="Brush.TextMuted" Color="{StaticResource C.TextMuted}" />
+    <SolidColorBrush x:Key="Brush.TextDim" Color="{StaticResource C.TextDim}" />
+    <SolidColorBrush x:Key="Brush.Accent" Color="{StaticResource C.Accent}" />
+    <SolidColorBrush x:Key="Brush.AccentHover" Color="{StaticResource C.AccentHover}" />
+    <SolidColorBrush x:Key="Brush.AccentPressed" Color="{StaticResource C.AccentPressed}" />
+    <SolidColorBrush x:Key="Brush.AccentSoft" Color="{StaticResource C.AccentSoft}" />
+    <SolidColorBrush x:Key="Brush.OnAccent" Color="{StaticResource C.OnAccent}" />
+    <SolidColorBrush x:Key="Brush.Success" Color="{StaticResource C.Success}" />
+    <SolidColorBrush x:Key="Brush.Warning" Color="{StaticResource C.Warning}" />
+    <SolidColorBrush x:Key="Brush.Danger" Color="{StaticResource C.Danger}" />
+    <SolidColorBrush x:Key="Brush.DangerSoft" Color="{StaticResource C.DangerSoft}" />
+    <SolidColorBrush x:Key="Brush.Input" Color="{StaticResource C.Input}" />
+    <SolidColorBrush x:Key="Brush.Selection" Color="{StaticResource C.Selection}" />
+
+</ResourceDictionary>

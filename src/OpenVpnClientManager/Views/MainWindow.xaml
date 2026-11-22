@@ -1,0 +1,385 @@
+<Window x:Class="OpenVpnClientManager.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:OpenVpnClientManager.ViewModels"
+        Style="{StaticResource Style.Window}"
+        Title="OpenVPN Client Manager" Width="1060" Height="700" MinWidth="820" MinHeight="520"
+        Icon="pack://application:,,,/Assets/app.ico"
+        WindowStartupLocation="CenterScreen" AllowDrop="True" Drop="OnDrop" DragOver="OnDragOver">
+
+    <Window.Resources>
+        <!-- one site row; used in the grouped list and in the search results -->
+        <DataTemplate x:Key="SiteRow" DataType="{x:Type vm:SiteViewModel}">
+            <Border x:Name="Row" Background="Transparent" BorderThickness="1" BorderBrush="Transparent" CornerRadius="6" Padding="10,8" Margin="0,1" Cursor="Hand">
+                <Border.InputBindings>
+                    <MouseBinding MouseAction="LeftClick" Command="{Binding DataContext.SelectSiteCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.ToggleConnectionCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+                </Border.InputBindings>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="22" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Ellipse Style="{StaticResource Style.StatusDot}" Fill="{Binding State, Converter={StaticResource StateToBrush}}" HorizontalAlignment="Left" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Name}" Style="{StaticResource Text.Base}" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding CustomerName}" Style="{StaticResource Text.Dim}" Margin="8,0,0,0" VerticalAlignment="Center"
+                                       Visibility="{Binding DataContext.IsSearching, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                            <TextBlock Text="{Binding Remote}" Style="{StaticResource Text.Dim}" />
+                            <TextBlock Text="{Binding ProtocolLabel}" Style="{StaticResource Text.Dim}" Margin="8,0,0,0" />
+                            <TextBlock Text="&#xE192;" Style="{StaticResource Text.Icon}" FontSize="11" Foreground="{DynamicResource Brush.TextDim}" Margin="8,0,0,0"
+                                       ToolTip="Inloggegevens opgeslagen" Visibility="{Binding HasStoredCredentials, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0">
+                        <TextBlock Text="{Binding StatusText}" Style="{StaticResource Text.Muted}" FontSize="12"
+                                   Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}" />
+                        <TextBlock Text="{Binding Duration}" Style="{StaticResource Text.Mono}" Foreground="{DynamicResource Brush.Success}" Margin="8,0,0,0"
+                                   Visibility="{Binding IsConnected, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+                    <Grid Grid.Column="3" VerticalAlignment="Center">
+                        <Button Style="{StaticResource Style.IconButton}" Content="&#xE768;" ToolTip="Verbinden" Foreground="{DynamicResource Brush.Accent}"
+                                Command="{Binding DataContext.ConnectCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                                Visibility="{Binding IsActive, Converter={StaticResource InvBoolToVis}}" />
+                        <Button Style="{StaticResource Style.IconButton}" Content="&#xE71A;" ToolTip="Verbreken" Foreground="{DynamicResource Brush.Danger}"
+                                Command="{Binding DataContext.DisconnectCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                                Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}" />
+                    </Grid>
+                </Grid>
+            </Border>
+            <DataTemplate.Triggers>
+                <Trigger SourceName="Row" Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Row" Property="Background" Value="{DynamicResource Brush.SurfaceHover}" />
+                </Trigger>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                    <Setter TargetName="Row" Property="Background" Value="{DynamicResource Brush.SurfaceActive}" />
+                    <Setter TargetName="Row" Property="BorderBrush" Value="{DynamicResource Brush.Accent}" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Window.InputBindings>
+        <KeyBinding Key="F" Modifiers="Ctrl" Command="{Binding FocusSearchCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+        <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding AddSiteCommand}" />
+        <KeyBinding Key="N" Modifiers="Ctrl+Shift" Command="{Binding AddCustomerCommand}" />
+        <KeyBinding Key="OemComma" Modifiers="Ctrl" Command="{Binding OpenSettingsCommand}" />
+    </Window.InputBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ============================================================ header -->
+        <Border Background="{DynamicResource Brush.Bg}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1" Padding="24,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
+                    <Ellipse Width="8" Height="8" Fill="{DynamicResource Brush.Accent}" VerticalAlignment="Center" Margin="0,1,10,0" />
+                    <TextBlock Style="{StaticResource Text.H2}" FontSize="16" VerticalAlignment="Center">
+                        <Run Text="OpenVPN" /><Run Text=" Client Manager" Foreground="{DynamicResource Brush.TextMuted}" FontWeight="Normal" />
+                    </TextBlock>
+                </StackPanel>
+
+                <Grid Grid.Column="1" MaxWidth="560" HorizontalAlignment="Stretch">
+                    <TextBox x:Name="SearchBox" Style="{StaticResource Style.TextBox}" Padding="34,7,34,7" FontSize="14"
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" PreviewKeyDown="OnSearchKeyDown" />
+                    <TextBlock Text="&#xE721;" Style="{StaticResource Text.Icon}" Foreground="{DynamicResource Brush.TextDim}" HorizontalAlignment="Left" Margin="12,0,0,0" IsHitTestVisible="False" />
+                    <TextBlock Text="Zoek klant of site…  (Ctrl+F)" Style="{StaticResource Text.Dim}" FontSize="14" VerticalAlignment="Center" Margin="36,0,0,0" IsHitTestVisible="False"
+                               Visibility="{Binding IsSearching, Converter={StaticResource InvBoolToVis}}" />
+                    <Button Style="{StaticResource Style.IconButton}" Content="&#xE711;" HorizontalAlignment="Right" Margin="0,0,2,0" Width="28" Height="28" FontSize="11"
+                            Command="{Binding ClearSearchCommand}" ToolTip="Wissen (Esc)" Visibility="{Binding IsSearching, Converter={StaticResource BoolToVis}}" />
+                </Grid>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <Button Style="{StaticResource Style.PrimaryButton}" Padding="14,6" Command="{Binding AddSiteCommand}" ToolTip="Site toevoegen (Ctrl+N)">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE710;" Style="{StaticResource Text.Icon}" Foreground="{DynamicResource Brush.OnAccent}" FontSize="12" Margin="0,0,8,0" />
+                            <TextBlock Text="Site" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource Style.IconButton}" Content="&#xE716;" ToolTip="Klant toevoegen (Ctrl+Shift+N)" Command="{Binding AddCustomerCommand}" Margin="8,0,0,0" />
+                    <Button Style="{StaticResource Style.IconButton}" Content="&#xE8F4;" ToolTip="Configs van OpenVPN GUI importeren" Command="{Binding BulkImportCommand}" />
+                    <Button Style="{StaticResource Style.IconButton}" Content="&#xE8B5;" ToolTip="Bundel importeren" Command="{Binding ImportBundleCommand}" />
+                    <Button Style="{StaticResource Style.IconButton}" Content="&#xEDE1;" ToolTip="Exporteren" Command="{Binding ExportBundleCommand}" />
+                    <Button Style="{StaticResource Style.IconButton}" Content="&#xE793;" ToolTip="Licht/donker" Command="{Binding ToggleThemeCommand}" />
+                    <Button Style="{StaticResource Style.IconButton}" Content="&#xE713;" ToolTip="Instellingen (Ctrl+,)" Command="{Binding OpenSettingsCommand}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ============================================================ environment banner -->
+        <Border Grid.Row="1" Style="{StaticResource Style.WarningBanner}" Margin="24,12,24,0" CornerRadius="8"
+                Visibility="{Binding HasEnvironmentProblems, Converter={StaticResource BoolToVis}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE7BA;" Style="{StaticResource Text.Icon}" Foreground="{DynamicResource Brush.Accent}" FontSize="16" Margin="0,2,12,0" VerticalAlignment="Top" />
+                <ItemsControl Grid.Column="1" ItemsSource="{Binding EnvironmentProblems}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" Foreground="{DynamicResource Brush.Text}" TextWrapping="Wrap" Margin="0,1" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                    <Button Style="{StaticResource Style.PrimaryButton}" Content="Groep toevoegen…" Command="{Binding FixGroupCommand}" Margin="0,0,8,0"
+                            Visibility="{Binding CanFixGroup, Converter={StaticResource BoolToVis}}" />
+                    <Button Style="{StaticResource Style.Button}" Content="Opnieuw controleren" Command="{Binding RefreshEnvironmentCommand}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ============================================================ content -->
+        <Grid Grid.Row="2" Margin="24,16,24,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="380" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="360" />
+            </Grid.ColumnDefinitions>
+
+            <!-- left: list -->
+            <Border Style="{StaticResource Style.Card}" Padding="8">
+                <Grid>
+                    <!-- empty state -->
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="460"
+                                Visibility="{Binding HasCustomers, Converter={StaticResource InvBoolToVis}}">
+                        <TextBlock Text="&#xE968;" Style="{StaticResource Text.Icon}" FontSize="40" Foreground="{DynamicResource Brush.TextDim}" Margin="0,0,0,16" />
+                        <TextBlock Text="Nog geen klanten" Style="{StaticResource Text.H2}" HorizontalAlignment="Center" />
+                        <TextBlock Style="{StaticResource Text.Muted}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,8,0,20"
+                                   Text="Maak een klant aan en voeg sites toe door .ovpn-bestanden te importeren. Of neem in één keer de configs van OpenVPN GUI over." />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button Style="{StaticResource Style.PrimaryButton}" Content="Klant toevoegen" Command="{Binding AddCustomerCommand}" Margin="0,0,8,0" />
+                            <Button Style="{StaticResource Style.Button}" Content="Uit OpenVPN GUI" Command="{Binding BulkImportCommand}" Margin="0,0,8,0" />
+                            <Button Style="{StaticResource Style.Button}" Content="Bundel importeren" Command="{Binding ImportBundleCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- grouped view -->
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding IsSearching, Converter={StaticResource InvBoolToVis}}">
+                        <ItemsControl ItemsSource="{Binding Customers}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:CustomerViewModel}">
+                                    <StackPanel Margin="0,0,0,6">
+                                        <Border x:Name="Header" Padding="6,6,4,6" CornerRadius="6" Background="Transparent">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <ToggleButton IsChecked="{Binding IsExpanded, Mode=TwoWay}" Width="24" Height="24" Background="Transparent" BorderThickness="0" Cursor="Hand" FocusVisualStyle="{x:Null}">
+                                                    <ToggleButton.Template>
+                                                        <ControlTemplate TargetType="ToggleButton">
+                                                            <Border Background="Transparent">
+                                                                <TextBlock x:Name="Chevron" Text="&#xE70D;" Style="{StaticResource Text.Icon}" FontSize="10" Foreground="{DynamicResource Brush.TextMuted}" />
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsChecked" Value="False">
+                                                                    <Setter TargetName="Chevron" Property="Text" Value="&#xE76C;" />
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </ToggleButton.Template>
+                                                </ToggleButton>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                                                    <TextBlock Text="{Binding Name}" Style="{StaticResource Text.H3}" />
+                                                    <TextBlock Text="{Binding SiteCountLabel}" Style="{StaticResource Text.Dim}" Margin="10,0,0,0" VerticalAlignment="Center" />
+                                                    <Border Background="{DynamicResource Brush.Success}" CornerRadius="8" Padding="7,1" Margin="10,0,0,0" VerticalAlignment="Center"
+                                                            Visibility="{Binding HasConnected, Converter={StaticResource BoolToVis}}">
+                                                        <TextBlock Text="{Binding ConnectedCount, StringFormat='{}{0} verbonden'}" FontSize="10" FontWeight="SemiBold" Foreground="#0D0F12" />
+                                                    </Border>
+                                                </StackPanel>
+                                                <StackPanel x:Name="Actions" Grid.Column="2" Orientation="Horizontal" Opacity="0">
+                                                    <Button Style="{StaticResource Style.IconButton}" Content="&#xE710;" ToolTip="Site toevoegen" Width="28" Height="28" FontSize="12"
+                                                            Command="{Binding DataContext.AddSiteCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+                                                    <Button Style="{StaticResource Style.IconButton}" Content="&#xE70F;" ToolTip="Klant bewerken" Width="28" Height="28" FontSize="12"
+                                                            Command="{Binding DataContext.EditCustomerCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+                                                    <Button Style="{StaticResource Style.IconButton}" Content="&#xE74D;" ToolTip="Klant verwijderen" Width="28" Height="28" FontSize="12"
+                                                            Command="{Binding DataContext.DeleteCustomerCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                        <ItemsControl ItemsSource="{Binding Sites}" ItemTemplate="{StaticResource SiteRow}" Margin="14,0,0,0"
+                                                      Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}" />
+                                        <TextBlock Text="Geen sites. Gebruik + om een .ovpn te importeren." Margin="24,2,0,4">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Dim}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding SiteCount}" Value="0" />
+                                                                <Condition Binding="{Binding IsExpanded}" Value="True" />
+                                                            </MultiDataTrigger.Conditions>
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </MultiDataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <DataTemplate.Triggers>
+                                        <Trigger SourceName="Header" Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Actions" Property="Opacity" Value="1" />
+                                            <Setter TargetName="Header" Property="Background" Value="{DynamicResource Brush.SurfaceHover}" />
+                                        </Trigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- search results -->
+                    <Grid Visibility="{Binding IsSearching, Converter={StaticResource BoolToVis}}">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding SearchResults}" ItemTemplate="{StaticResource SiteRow}" />
+                        </ScrollViewer>
+                        <TextBlock Text="Geen resultaten" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Dim}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SearchResults.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- right: details -->
+            <Border Grid.Column="2" Style="{StaticResource Style.Card}" Padding="20">
+                <Grid>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{Binding HasSelection, Converter={StaticResource InvBoolToVis}}">
+                        <TextBlock Text="&#xE8A1;" Style="{StaticResource Text.Icon}" FontSize="32" Foreground="{DynamicResource Brush.TextDim}" Margin="0,0,0,12" />
+                        <TextBlock Text="Selecteer een site" Style="{StaticResource Text.Muted}" HorizontalAlignment="Center" />
+                        <TextBlock Text="Dubbelklik of Enter om te verbinden" Style="{StaticResource Text.Dim}" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" DataContext="{Binding SelectedSite}" Visibility="{Binding DataContext.HasSelection, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding CustomerName}" Style="{StaticResource Text.Eyebrow}" />
+                            <TextBlock Text="{Binding Name}" Style="{StaticResource Text.H1}" FontSize="22" Margin="0,2,0,10" TextWrapping="Wrap" />
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <Ellipse Style="{StaticResource Style.StatusDot}" Width="10" Height="10" Fill="{Binding State, Converter={StaticResource StateToBrush}}" Margin="0,0,8,0" />
+                                <TextBlock Text="{Binding StatusText}" Style="{StaticResource Text.Base}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Duration}" Style="{StaticResource Text.Mono}" Foreground="{DynamicResource Brush.Success}" Margin="10,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <Grid>
+                                <Button Style="{StaticResource Style.PrimaryButton}" Content="Verbinden" Height="38" FontSize="14"
+                                        Command="{Binding DataContext.ConnectCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                                        Visibility="{Binding IsActive, Converter={StaticResource InvBoolToVis}}" />
+                                <Button Style="{StaticResource Style.DangerButton}" Content="Verbreken" Height="38" FontSize="14"
+                                        Command="{Binding DataContext.DisconnectCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                                        Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}" />
+                            </Grid>
+
+                            <Border Style="{StaticResource Style.DangerBanner}" Margin="0,12,0,0" Visibility="{Binding LastError, Converter={StaticResource NullToVis}}">
+                                <TextBlock Text="{Binding LastError}" TextWrapping="Wrap" TextTrimming="None" Foreground="{DynamicResource Brush.Text}" FontSize="12" />
+                            </Border>
+
+                            <Separator Style="{StaticResource Style.Separator}" Margin="0,16" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                                </Grid.RowDefinitions>
+                                <Grid.Resources>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Muted}">
+                                        <Setter Property="Margin" Value="0,0,14,6" />
+                                    </Style>
+                                </Grid.Resources>
+                                <TextBlock Text="Server" />
+                                <TextBlock Grid.Column="1" Text="{Binding Remote}" Foreground="{DynamicResource Brush.Text}" />
+                                <TextBlock Grid.Row="1" Text="Protocol" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ProtocolLabel}" Foreground="{DynamicResource Brush.Text}" />
+                                <TextBlock Grid.Row="2" Text="VPN-IP" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding LocalIp, TargetNullValue=–}" Foreground="{DynamicResource Brush.Text}" FontFamily="{StaticResource Font.Mono}" />
+                                <TextBlock Grid.Row="3" Text="Server-IP" />
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding RemoteIp, TargetNullValue=–}" Foreground="{DynamicResource Brush.Text}" FontFamily="{StaticResource Font.Mono}" />
+                                <TextBlock Grid.Row="4" Text="Verkeer" />
+                                <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal">
+                                    <TextBlock Text="&#xE74B;" Style="{StaticResource Text.Icon}" FontSize="10" Foreground="{DynamicResource Brush.TextDim}" Margin="0,0,4,6" />
+                                    <TextBlock Text="{Binding BytesIn, Converter={StaticResource BytesToString}}" Foreground="{DynamicResource Brush.Text}" />
+                                    <TextBlock Text="&#xE74A;" Style="{StaticResource Text.Icon}" FontSize="10" Foreground="{DynamicResource Brush.TextDim}" Margin="12,0,4,6" />
+                                    <TextBlock Text="{Binding BytesOut, Converter={StaticResource BytesToString}}" Foreground="{DynamicResource Brush.Text}" />
+                                </StackPanel>
+                                <TextBlock Grid.Row="5" Text="Laatst verbonden" />
+                                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding LastConnectedLabel}" Foreground="{DynamicResource Brush.Text}" />
+                                <TextBlock Grid.Row="6" Text="Geïmporteerd" />
+                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding ImportedLabel}" Foreground="{DynamicResource Brush.Text}" />
+                            </Grid>
+
+                            <TextBlock Text="{Binding Notes}" Style="{StaticResource Text.Muted}" TextWrapping="Wrap" TextTrimming="None" Margin="0,6,0,0"
+                                       Visibility="{Binding Notes, Converter={StaticResource NullToVis}}" />
+
+                            <Separator Style="{StaticResource Style.Separator}" Margin="0,16" />
+
+                            <UniformGrid Columns="2" Rows="2">
+                                <Button Style="{StaticResource Style.Button}" Content="Log" Margin="0,0,4,8"
+                                        Command="{Binding DataContext.ShowLogCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+                                <Button Style="{StaticResource Style.Button}" Content="Bewerken" Margin="4,0,0,8"
+                                        Command="{Binding DataContext.EditSiteCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+                                <Button Style="{StaticResource Style.GhostButton}" Content="Login vergeten" Margin="0,0,4,0" ToolTip="Opgeslagen inloggegevens van deze site verwijderen"
+                                        Command="{Binding DataContext.ForgetCredentialsCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+                                <Button Style="{StaticResource Style.GhostButton}" Content="Verwijderen" Foreground="{DynamicResource Brush.Danger}" Margin="4,0,0,0"
+                                        Command="{Binding DataContext.DeleteSiteCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+                            </UniformGrid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ============================================================ status bar -->
+        <Border Grid.Row="3" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,1,0,0" Padding="24,8">
+            <Grid>
+                <TextBlock Text="{Binding EnvironmentSummary}" Style="{StaticResource Text.Dim}" VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource Style.GhostButton}" Content="Alles verbreken" Padding="8,2" MinHeight="0" FontSize="12" Margin="0,0,12,0"
+                            Command="{Binding DisconnectAllCommand}" Visibility="{Binding HasAnyConnection, Converter={StaticResource BoolToVis}}" />
+                    <Ellipse Width="7" Height="7" Margin="0,0,7,0">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse" BasedOn="{StaticResource Style.StatusDot}">
+                                <Setter Property="Fill" Value="{DynamicResource Brush.TextDim}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasAnyConnection}" Value="True">
+                                        <Setter Property="Fill" Value="{DynamicResource Brush.Success}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Text="{Binding ConnectionSummary}" Style="{StaticResource Text.Dim}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

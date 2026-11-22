@@ -1,0 +1,22 @@
+<Window x:Class="OpenVpnClientManager.Views.CustomerDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Style="{StaticResource Style.Window}"
+        Title="Klant" Width="440" SizeToContent="Height"
+        ResizeMode="NoResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <StackPanel Margin="24,20,24,20">
+        <TextBlock x:Name="TitleText" Style="{StaticResource Text.H2}" Margin="0,0,0,16" />
+
+        <TextBlock Text="Naam" Style="{StaticResource Text.Muted}" Margin="0,0,0,6" />
+        <TextBox x:Name="NameBox" Style="{StaticResource Style.TextBox}" MaxLength="200" TextChanged="OnChanged" />
+
+        <TextBlock Text="Notities (optioneel)" Style="{StaticResource Text.Muted}" Margin="0,14,0,6" />
+        <TextBox x:Name="NotesBox" Style="{StaticResource Style.TextBox}" MaxLength="2000" AcceptsReturn="True" TextWrapping="Wrap" Height="80"
+                 VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Style="{StaticResource Style.Button}" Content="Annuleren" IsCancel="True" Margin="0,0,8,0" MinWidth="96" />
+            <Button x:Name="OkButton" Style="{StaticResource Style.PrimaryButton}" Content="Opslaan" IsDefault="True" MinWidth="96" Click="OnOk" />
+        </StackPanel>
+    </StackPanel>
+</Window>

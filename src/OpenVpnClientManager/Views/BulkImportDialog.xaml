@@ -1,0 +1,89 @@
+<Window x:Class="OpenVpnClientManager.Views.BulkImportDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Style="{StaticResource Style.Window}"
+        Title="Importeren uit OpenVPN GUI" Width="980" Height="680" MinWidth="760" MinHeight="420"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <Grid Margin="24,20,24,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <TextBlock Text="Bestaande configs importeren" Style="{StaticResource Text.H2}" Margin="0,0,0,4" />
+            <TextBlock Style="{StaticResource Text.Muted}" TextWrapping="Wrap" TextTrimming="None"
+                       Text="De configs van OpenVPN GUI worden gekopieerd; de originelen blijven staan. Klant en site zijn voorgesteld op basis van de bestandsnaam en kunt u hier aanpassen. Gelijke klantnamen komen onder dezelfde klant." />
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,14,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="PathBox" Style="{StaticResource Style.TextBox}" IsReadOnly="True" Foreground="{DynamicResource Brush.TextMuted}" />
+            <Button Grid.Column="1" Style="{StaticResource Style.Button}" Content="Andere map…" Margin="8,0,0,0" Click="OnBrowse" />
+        </Grid>
+
+        <Grid Grid.Row="2" Margin="12,16,22,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="30" />
+                <ColumnDefinition Width="160" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="170" />
+            </Grid.ColumnDefinitions>
+            <CheckBox x:Name="SelectAllBox" Style="{StaticResource Style.CheckBox}" Click="OnSelectAll" ToolTip="Alles selecteren" />
+            <TextBlock Grid.Column="1" Text="Klant" Style="{StaticResource Text.Eyebrow}" />
+            <TextBlock Grid.Column="2" Text="Site" Style="{StaticResource Text.Eyebrow}" Margin="8,0,0,0" />
+            <TextBlock Grid.Column="3" Text="Bestand" Style="{StaticResource Text.Eyebrow}" Margin="12,0,0,0" />
+            <TextBlock Grid.Column="4" Text="Server" Style="{StaticResource Text.Eyebrow}" />
+        </Grid>
+
+        <Border Grid.Row="3" Style="{StaticResource Style.Card}" Padding="6">
+            <Grid>
+                <TextBlock x:Name="EmptyText" Text="Geen .ovpn-bestanden gevonden in deze map." Style="{StaticResource Text.Dim}" FontSize="14"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="Rows" VirtualizingPanel.IsVirtualizing="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="6,3">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30" />
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="200" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="170" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox Style="{StaticResource Style.CheckBox}" IsChecked="{Binding Selected, Mode=TwoWay}" IsEnabled="{Binding CanImport}" Click="OnRowClick" VerticalAlignment="Center" />
+                                    <TextBox Grid.Column="1" Style="{StaticResource Style.TextBox}" Text="{Binding Customer, UpdateSourceTrigger=PropertyChanged}" MaxLength="200"
+                                             MinHeight="30" Padding="8,4" IsEnabled="{Binding CanImport}" />
+                                    <TextBox Grid.Column="2" Style="{StaticResource Style.TextBox}" Text="{Binding Site, UpdateSourceTrigger=PropertyChanged}" MaxLength="200"
+                                             MinHeight="30" Padding="8,4" Margin="8,0,0,0" IsEnabled="{Binding CanImport}" />
+                                    <StackPanel Grid.Column="3" Margin="12,0,8,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding FileName}" Style="{StaticResource Text.Muted}" FontSize="12" ToolTip="{Binding Path}" />
+                                        <TextBlock Text="{Binding Status}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip="{Binding Status}"
+                                                   Foreground="{DynamicResource Brush.Warning}" Visibility="{Binding Status, Converter={StaticResource NullToVis}}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="4" Text="{Binding Remote}" Style="{StaticResource Text.Mono}" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" ToolTip="{Binding Remote}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="4" Margin="0,16,0,0">
+            <TextBlock x:Name="SummaryText" Style="{StaticResource Text.Muted}" VerticalAlignment="Center" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource Style.Button}" Content="Annuleren" IsCancel="True" Margin="0,0,8,0" MinWidth="96" />
+                <Button x:Name="OkButton" Style="{StaticResource Style.PrimaryButton}" Content="Importeren" MinWidth="130" Click="OnOk" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,46 @@
+<Window x:Class="OpenVpnClientManager.Views.SettingsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Style="{StaticResource Style.Window}"
+        Title="Instellingen" Width="520" SizeToContent="Height"
+        ResizeMode="NoResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <StackPanel Margin="24,20,24,20">
+        <TextBlock Text="Instellingen" Style="{StaticResource Text.H2}" Margin="0,0,0,16" />
+
+        <TextBlock Text="Weergave" Style="{StaticResource Text.Eyebrow}" Margin="0,0,0,8" />
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+            <RadioButton x:Name="DarkRadio" Style="{StaticResource Style.RadioButton}" Content="Donker" GroupName="Theme" Margin="0,0,20,0" />
+            <RadioButton x:Name="LightRadio" Style="{StaticResource Style.RadioButton}" Content="Licht" GroupName="Theme" />
+        </StackPanel>
+
+        <Separator Style="{StaticResource Style.Separator}" Margin="0,12" />
+
+        <TextBlock Text="Gedrag" Style="{StaticResource Text.Eyebrow}" Margin="0,0,0,8" />
+        <CheckBox x:Name="MinimizeToTrayBox" Style="{StaticResource Style.CheckBox}" Content="Minimaliseren naar systeemvak" Margin="0,0,0,8" />
+        <CheckBox x:Name="CloseToTrayBox" Style="{StaticResource Style.CheckBox}" Content="Sluiten verbergt het venster (verbindingen blijven actief)" Margin="0,0,0,8" />
+        <CheckBox x:Name="StartMinimizedBox" Style="{StaticResource Style.CheckBox}" Content="Geminimaliseerd starten" Margin="0,0,0,8" />
+        <CheckBox x:Name="NotificationsBox" Style="{StaticResource Style.CheckBox}" Content="Meldingen tonen bij verbinden en verbreken" Margin="0,0,0,8" />
+        <CheckBox x:Name="AutoStartBox" Style="{StaticResource Style.CheckBox}" Content="Starten bij aanmelden bij Windows" Margin="0,0,0,0" />
+
+        <Separator Style="{StaticResource Style.Separator}" Margin="0,12" />
+
+        <TextBlock Text="Beveiliging" Style="{StaticResource Text.Eyebrow}" Margin="0,0,0,8" />
+        <CheckBox x:Name="AllowScriptsBox" Style="{StaticResource Style.CheckBox}" Content="Scripts uit configuraties toestaan (niet aanbevolen)" />
+        <TextBlock Style="{StaticResource Text.Dim}" TextWrapping="Wrap" Margin="26,4,0,0"
+                   Text="Standaard wordt openvpn gestart met --script-security 1, waardoor up/down-scripts en plugins uit een config nooit worden uitgevoerd. Alleen inschakelen als u de configs volledig vertrouwt." />
+
+        <Border Style="{StaticResource Style.Card}" Margin="0,16,0,0" Padding="12">
+            <StackPanel>
+                <TextBlock Text="Opslaglocatie" Style="{StaticResource Text.Muted}" Margin="0,0,0,4" />
+                <TextBlock x:Name="DataPathText" Style="{StaticResource Text.Mono}" TextWrapping="Wrap" TextTrimming="None" />
+                <TextBlock Style="{StaticResource Text.Dim}" TextWrapping="Wrap" Margin="0,6,0,0"
+                           Text="Configs, logs en (versleutelde) inloggegevens staan hier. De map is alleen toegankelijk voor dit gebruikersaccount en SYSTEM." />
+            </StackPanel>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Style="{StaticResource Style.Button}" Content="Annuleren" IsCancel="True" Margin="0,0,8,0" MinWidth="96" />
+            <Button Style="{StaticResource Style.PrimaryButton}" Content="Opslaan" IsDefault="True" MinWidth="96" Click="OnOk" />
+        </StackPanel>
+    </StackPanel>
+</Window>

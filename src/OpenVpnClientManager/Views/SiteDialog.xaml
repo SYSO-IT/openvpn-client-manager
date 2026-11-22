@@ -1,0 +1,112 @@
+<Window x:Class="OpenVpnClientManager.Views.SiteDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Style="{StaticResource Style.Window}"
+        Title="Site" Width="600" SizeToContent="Height" MaxHeight="820"
+        ResizeMode="NoResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        AllowDrop="True" Drop="OnDrop" DragOver="OnDragOver">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24,20,24,20">
+            <TextBlock x:Name="TitleText" Style="{StaticResource Text.H2}" Margin="0,0,0,16" />
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Klant" Style="{StaticResource Text.Muted}" Margin="0,0,0,6" />
+                    <ComboBox x:Name="CustomerBox" Style="{StaticResource Style.ComboBox}" DisplayMemberPath="Name" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Naam van de site" Style="{StaticResource Text.Muted}" Margin="0,0,0,6" />
+                    <TextBox x:Name="NameBox" Style="{StaticResource Style.TextBox}" MaxLength="200" TextChanged="OnNameChanged" />
+                </StackPanel>
+            </Grid>
+
+            <TextBlock Text="Notities (optioneel)" Style="{StaticResource Text.Muted}" Margin="0,14,0,6" />
+            <TextBox x:Name="NotesBox" Style="{StaticResource Style.TextBox}" MaxLength="2000" AcceptsReturn="True" TextWrapping="Wrap" Height="60"
+                     VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+
+            <TextBlock Text="OpenVPN-configuratie" Style="{StaticResource Text.Eyebrow}" Margin="0,18,0,8" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="PathBox" Style="{StaticResource Style.TextBox}" IsReadOnly="True" Foreground="{DynamicResource Brush.TextMuted}" />
+                <Button x:Name="BrowseButton" Grid.Column="1" Style="{StaticResource Style.Button}" Content="Bladeren…" Margin="8,0,0,0" Click="OnBrowse" />
+            </Grid>
+            <TextBlock Style="{StaticResource Text.Dim}" Margin="0,6,0,0"
+                       Text="Kies een .ovpn-bestand of sleep het hierheen. Losse certificaat- en sleutelbestanden naast de config worden automatisch ingesloten." TextWrapping="Wrap" />
+
+            <Border x:Name="SummaryCard" Style="{StaticResource Style.Card}" Margin="0,12,0,0" Visibility="Collapsed">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Server" Style="{StaticResource Text.Muted}" Margin="0,0,16,4" />
+                        <TextBlock x:Name="RemoteText" Grid.Column="1" Style="{StaticResource Text.Base}" />
+                        <TextBlock Grid.Row="1" Text="Protocol / device" Style="{StaticResource Text.Muted}" Margin="0,0,16,4" />
+                        <TextBlock x:Name="ProtoText" Grid.Row="1" Grid.Column="1" Style="{StaticResource Text.Base}" />
+                        <TextBlock Grid.Row="2" Text="Authenticatie" Style="{StaticResource Text.Muted}" Margin="0,0,16,4" />
+                        <TextBlock x:Name="AuthText" Grid.Row="2" Grid.Column="1" Style="{StaticResource Text.Base}" TextWrapping="Wrap" />
+                        <TextBlock Grid.Row="3" Text="Aangepast" Style="{StaticResource Text.Muted}" Margin="0,0,16,0" />
+                        <TextBlock x:Name="StrippedText" Grid.Row="3" Grid.Column="1" Style="{StaticResource Text.Dim}" TextWrapping="Wrap" TextTrimming="None" />
+                    </Grid>
+
+                    <ItemsControl x:Name="WarningsList" Margin="0,8,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0,2">
+                                    <TextBlock Text="&#xE7BA;" Style="{StaticResource Text.Icon}" FontSize="12" Foreground="{DynamicResource Brush.Warning}" Margin="0,2,8,0" VerticalAlignment="Top" />
+                                    <TextBlock Text="{Binding}" Style="{StaticResource Text.Muted}" TextWrapping="Wrap" TextTrimming="None" MaxWidth="470" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="BlockedCard" Style="{StaticResource Style.DangerBanner}" Margin="0,12,0,0" Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Text.H3}" Text="Deze config bevat directives die programma's kunnen uitvoeren" Margin="0,0,0,4" />
+                    <TextBlock Style="{StaticResource Text.Muted}" TextWrapping="Wrap" TextTrimming="None"
+                               Text="Een kwaadwillende config kan hiermee code op deze computer uitvoeren. Ze worden standaard verwijderd; de VPN werkt in vrijwel alle gevallen zonder." />
+                    <ItemsControl x:Name="BlockedList" Margin="0,8,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" Style="{StaticResource Text.Mono}" Foreground="{DynamicResource Brush.Danger}" TextTrimming="None" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <CheckBox x:Name="KeepBlockedBox" Style="{StaticResource Style.CheckBox}" Margin="0,10,0,0" Click="OnKeepBlockedChanged"
+                              Content="Toch behouden (ik vertrouw deze config volledig)" />
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="CredentialsCard" Style="{StaticResource Style.WarningBanner}" Margin="0,12,0,0" Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock x:Name="CredentialsText" Style="{StaticResource Text.Muted}" TextWrapping="Wrap" TextTrimming="None" />
+                    <CheckBox x:Name="StoreCredentialsBox" Style="{StaticResource Style.CheckBox}" Margin="0,8,0,0" IsChecked="True"
+                              Content="Deze inloggegevens versleuteld (DPAPI) opslaan bij de site" />
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="ErrorBanner" Style="{StaticResource Style.DangerBanner}" Margin="0,12,0,0" Visibility="Collapsed">
+                <TextBlock x:Name="ErrorText" TextWrapping="Wrap" Foreground="{DynamicResource Brush.Text}" />
+            </Border>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                <Button Style="{StaticResource Style.Button}" Content="Annuleren" IsCancel="True" Margin="0,0,8,0" MinWidth="96" />
+                <Button x:Name="OkButton" Style="{StaticResource Style.PrimaryButton}" Content="Opslaan" IsDefault="True" MinWidth="110" Click="OnOk" IsEnabled="False" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

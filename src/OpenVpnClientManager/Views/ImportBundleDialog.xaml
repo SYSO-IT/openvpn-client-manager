@@ -1,0 +1,70 @@
+<Window x:Class="OpenVpnClientManager.Views.ImportBundleDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Style="{StaticResource Style.Window}"
+        Title="Bundel importeren" Width="560" SizeToContent="Height"
+        ResizeMode="NoResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <StackPanel Margin="24,20,24,20">
+        <TextBlock Text="Bundel importeren" Style="{StaticResource Text.H2}" Margin="0,0,0,4" />
+        <TextBlock Style="{StaticResource Text.Muted}" TextWrapping="Wrap" Margin="0,0,0,16"
+                   Text="Importeert klanten, sites en OpenVPN-configs uit een bundel die met deze applicatie is geëxporteerd." />
+
+        <TextBlock Text="Bestand" Style="{StaticResource Text.Muted}" Margin="0,0,0,6" />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="PathBox" Style="{StaticResource Style.TextBox}" IsReadOnly="True" />
+            <Button Grid.Column="1" Style="{StaticResource Style.Button}" Content="Bladeren…" Margin="8,0,0,0" Click="OnBrowse" />
+        </Grid>
+
+        <StackPanel x:Name="PassPanel" Visibility="Collapsed" Margin="0,14,0,0">
+            <TextBlock Text="Wachtwoordzin (bundel is versleuteld)" Style="{StaticResource Text.Muted}" Margin="0,0,0,6" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <PasswordBox x:Name="PassBox" Style="{StaticResource Style.PasswordBox}" KeyDown="OnPassKeyDown" />
+                <Button Grid.Column="1" Style="{StaticResource Style.Button}" Content="Openen" Margin="8,0,0,0" Click="OnPreview" />
+            </Grid>
+        </StackPanel>
+
+        <Border x:Name="PreviewCard" Style="{StaticResource Style.Card}" Margin="0,16,0,0" Visibility="Collapsed">
+            <StackPanel>
+                <TextBlock Text="Inhoud" Style="{StaticResource Text.Eyebrow}" Margin="0,0,0,6" />
+                <TextBlock x:Name="PreviewText" Style="{StaticResource Text.Base}" TextWrapping="Wrap" TextTrimming="None" />
+                <ItemsControl x:Name="PreviewList" Margin="0,8,0,0" MaxHeight="180">
+                    <ItemsControl.Template>
+                        <ControlTemplate TargetType="ItemsControl">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsPresenter />
+                            </ScrollViewer>
+                        </ControlTemplate>
+                    </ItemsControl.Template>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" Style="{StaticResource Text.Muted}" Margin="0,1" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <Border x:Name="ErrorBanner" Style="{StaticResource Style.DangerBanner}" Margin="0,16,0,0" Visibility="Collapsed">
+            <TextBlock x:Name="ErrorText" TextWrapping="Wrap" Foreground="{DynamicResource Brush.Text}" />
+        </Border>
+
+        <StackPanel x:Name="OptionsPanel" Margin="0,16,0,0" Visibility="Collapsed">
+            <TextBlock Text="Opties" Style="{StaticResource Text.Eyebrow}" Margin="0,0,0,8" />
+            <CheckBox x:Name="OverwriteBox" Style="{StaticResource Style.CheckBox}" Content="Bestaande sites met hetzelfde ID overschrijven" Margin="0,0,0,8" />
+            <CheckBox x:Name="CredentialsBox" Style="{StaticResource Style.CheckBox}" Content="Meegeleverde inloggegevens importeren (versleuteld opslaan)" Visibility="Collapsed" IsChecked="True" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Style="{StaticResource Style.Button}" Content="Annuleren" IsCancel="True" Margin="0,0,8,0" MinWidth="96" />
+            <Button x:Name="OkButton" Style="{StaticResource Style.PrimaryButton}" Content="Importeren" IsDefault="True" MinWidth="120" Click="OnOk" IsEnabled="False" />
+        </StackPanel>
+    </StackPanel>
+</Window>
